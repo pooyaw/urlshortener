@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="url shrinkener">
+
+    <title>url shortener</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.3/js/tether.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+  </head>
+
+  <body>
+<script>
+function DisplayQR(forWho, content) {
+    jQuery("#" + forWho).qrcode({
+        text: content,
+        width: 128,
+        height: 128
+    });
+}
+
+function Shrink(longURLID) {
+    var longURL = document.getElementById(longURLID).value;
+    longURL = longURL.trim();
+    if (longURL === "") {
+        alert("Please enter a url to shrink");
+        return
+    }
+    var shrinkURL = "";
+    jQuery.ajax ({
+        url: "/shrink/",
+        type: "POST",
+        data: JSON.stringify({longURL: longURL}),
+        dataType: "json",
+        contentType: "application/json",
+        success: function(data, textStatus, xhr){
+            shrinkURL = data.shrinkURL;
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            alert(JSON.parse(jqXHR.responseText).msg);
+        }
+    }).always(function() {
+        if (shrinkURL === "") {
+            return
+        }
+        document.getElementById("shrinkenedURL").innerHTML = shrinkURL;
+        document.getElementById("shrinkenedQR").innerHTML = "";
+        DisplayQR("shrinkenedQR", shrinkURL);
+    })
+}
+</script>
+    <div class="container">
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/index.html">MM Url Shortener</a>
+          </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+      </nav>
+
+      <div class="jumbotron">
+          <div role="row">
+              <div class="input-group">
+                  <input type="text" class="form-control text-center" id="longURL" placeholder="url to shrink https://www.google.com/">
+                  <div class="input-group-btn">
+                      <button type="submit" class="btn btn-success active" onclick="Shrink('longURL')">Shrink</button>
+                  </div>
+              </div>
+          </div>
+          <br /><br />
+          <div class="row">
+              <div id="shrinkenedURL" class="h4 text-primary col-xs-4 text-center"></div>
+              <div class="col">
+                <div id="shrinkenedQR" class="col-xs-4 text-center"></div>
+              </div>
+          </div>
+      </div>
+
+    </div> <!-- /container -->
+
+  </body>
+</html>
